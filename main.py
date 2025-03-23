@@ -1,6 +1,6 @@
 import os
 
-from helper import run_experiment, save_results_to_csv, plot_results
+from helper import run_experiment, save_results_to_csv, plot_results, get_available_datasets
 from generate_data import generate_weighted_graph, save_graph_to_disk
 
 def generate_graphs():
@@ -31,6 +31,7 @@ def generate_graphs():
     
     print("\nDataset generation completed.")
 
+
 def main_menu():
     """
     Display the main menu and handle user input.
@@ -40,7 +41,7 @@ def main_menu():
     while True:
         print("\n--- Dijkstra's Algorithm Performance Comparison ---")
         print("1. Run experiment on small graph (10 nodes)")
-        print("2. Run experiment on large graph (100 nodes)")
+        print("2. Run experiment on all available datasets")
         print("3. Generate new datasets (graphs)")
         print("4. Run custom experiment")
         print("5. View results")
@@ -57,10 +58,16 @@ def main_menu():
             print("Experiment completed.")
         
         elif choice == "2":
-            print("\nRunning experiment on large graph...")
-            radix, binary, d_heap, fibonacci = run_experiment("data/large_graph.json", 100)
-            results.append((100, radix, binary, d_heap, fibonacci))
-            print("Experiment completed.")
+            print("\nRunning experiment on all available datasets...")
+            datasets = get_available_datasets()
+            if not datasets:
+                print("No datasets found in the /data folder. Please generate datasets first.")
+            else:
+                for filepath, graph_size in datasets:
+                    print(f"\nRunning experiment on {filepath} (Size: {graph_size})...")
+                    radix, binary, d_heap, fibonacci = run_experiment(filepath, graph_size)
+                    results.append((graph_size, radix, binary, d_heap, fibonacci))
+                    print("Experiment completed.")
         
         elif choice == "3":
             generate_graphs()

@@ -1,6 +1,6 @@
 import csv
 import json
-import time
+import os, time
 import tracemalloc
 
 import matplotlib.pyplot as plt
@@ -113,6 +113,28 @@ def run_dijkstra(graph, source_node, heap, heap_type):
     
     return shortest_distances
 
+def get_available_datasets():
+    """
+    Scan the /data folder for all JSON files and return their paths and sizes.
+    
+    :return: A list of tuples (filepath, graph_size).
+    """
+    datasets = []
+    data_dir = "data"
+    if not os.path.exists(data_dir):
+        print(f"Directory '{data_dir}' does not exist. Please generate datasets first.")
+        return datasets
+    
+    for filename in os.listdir(data_dir):
+        if filename.endswith(".json"):
+            filepath = os.path.join(data_dir, filename)
+            with open(filepath, 'r') as f:
+                graph_data = json.load(f)
+            graph_size = len(graph_data["nodes"])
+            datasets.append((filepath, graph_size))
+    
+    return datasets
+
 def print_shortest_distances(shortest_distances, heap_type):
     """
     Print the shortest distances from the source node in a compact format.
@@ -216,44 +238,71 @@ def save_results_to_csv(results, filename):
 
 def plot_results(results):
     """
-    Plot the experiment results.
+    Plot the experiment results by averaging datapoints with the same dataset and heap type.
     
     :param results: A list of tuples (graph_size, radix_time, radix_memory, binary_time, binary_memory, d_heap_time, d_heap_memory, fibonacci_time, fibonacci_memory).
     """
-    graph_sizes = [result[0] for result in results]
-    
-    # Extract time and memory data
-    radix_times = [result[1][0] for result in results]
-    radix_memory = [result[1][1] for result in results]
-    binary_times = [result[2][0] for result in results]
-    binary_memory = [result[2][1] for result in results]
-    d_heap_times = [result[3][0] for result in results]
-    d_heap_memory = [result[3][1] for result in results]
-    fibonacci_times = [result[4][0] for result in results]
-    fibonacci_memory = [result[4][1] for result in results]
-    
+    from collections import defaultdict
+
+    # Group results by graph size
+    grouped_results = defaultdict(lambda: {
+        "radix_times": [],
+        "radix_memory": [],
+        "binary_times": [],
+        "binary_memory": [],
+        "d_heap_times": [],
+        "d_heap_memory": [],
+        "fibonacci_times": [],
+        "fibonacci_memory": []
+    })
+
+    for result in results:
+        graph_size = result[0]
+        grouped_results[graph_size]["radix_times"].append(result[1][0])
+        grouped_results[graph_size]["radix_memory"].append(result[1][1])
+        grouped_results[graph_size]["binary_times"].append(result[2][0])
+        grouped_results[graph_size]["binary_memory"].append(result[2][1])
+        grouped_results[graph_size]["d_heap_times"].append(result[3][0])
+        grouped_results[graph_size]["d_heap_memory"].append(result[3][1])
+        grouped_results[graph_size]["fibonacci_times"].append(result[4][0])
+        grouped_results[graph_size]["fibonacci_memory"].append(result[4][1])
+
+    # Calculate averages
+    graph_sizes = sorted(grouped_results.keys())
+    radix_times_avg = [sum(grouped_results[size]["radix_times"]) / len(grouped_results[size]["radix_times"]) for size in graph_sizes]
+    radix_memory_avg = [sum(grouped_results[size]["radix_memory"]) / len(grouped_results[size]["radix_memory"]) for size in graph_sizes]
+    binary_times_avg = [sum(grouped_results[size]["binary_times"]) / len(grouped_results[size]["binary_times"]) for size in graph_sizes]
+    binary_memory_avg = [sum(grouped_results[size]["binary_memory"]) / len(grouped_results[size]["binary_memory"]) for size in graph_sizes]
+    d_heap_times_avg = [sum(grouped_results[size]["d_heap_times"]) / len(grouped_results[size]["d_heap_times"]) for size in graph_sizes]
+    d_heap_memory_avg = [sum(grouped_results[size]["d_heap_memory"]) / len(grouped_results[size]["d_heap_memory"]) for size in graph_sizes]
+    fibonacci_times_avg = [sum(grouped_results[size]["fibonacci_times"]) / len(grouped_results[size]["fibonacci_times"]) for size in graph_sizes]
+    fibonacci_memory_avg = [sum(grouped_results[size]["fibonacci_memory"]) / len(grouped_results[size]["fibonacci_memory"]) for size in graph_sizes]
+
     # Plot time comparison
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
-    plt.plot(graph_sizes, radix_times, marker='o', label="RadixHeap")
-    plt.plot(graph_sizes, binary_times, marker='o', label="BinaryHeap")
-    plt.plot(graph_sizes, d_heap_times, marker='o', label="DHeap (d=4)")
-    plt.plot(graph_sizes, fibonacci_times, marker='o', label="FibonacciHeap")
+    plt.plot(graph_sizes, radix_times_avg, marker='o', label="RadixHeap")
+    plt.plot(graph_sizes, binary_times_avg, marker='o', label="BinaryHeap")
+    plt.plot(graph_sizes, d_heap_times_avg, marker='o', label="DHeap (d=4)")
+    plt.plot(graph_sizes, fibonacci_times_avg, marker='o', label="FibonacciHeap")
     plt.xlabel("Graph Size (Number of Nodes)")
-    plt.ylabel("Time Consumed (Seconds)")
-    plt.title("Time Comparison")
+    plt.ylabel("Average Time Consumed (Seconds)")
+    plt.title("Time Comparison (Averaged)")
     plt.legend()
     plt.grid(True)
     
-    # Plot memory comparison
+    # Plot memory comparison as a bar chart
     plt.subplot(1, 2, 2)
-    plt.plot(graph_sizes, radix_memory, marker='o', label="RadixHeap")
-    plt.plot(graph_sizes, binary_memory, marker='o', label="BinaryHeap")
-    plt.plot(graph_sizes, d_heap_memory, marker='o', label="DHeap (d=4)")
-    plt.plot(graph_sizes, fibonacci_memory, marker='o', label="FibonacciHeap")
+    bar_width = 0.2
+    x = range(len(graph_sizes))
+    plt.bar([i - 1.5 * bar_width for i in x], radix_memory_avg, width=bar_width, label="RadixHeap")
+    plt.bar([i - 0.5 * bar_width for i in x], binary_memory_avg, width=bar_width, label="BinaryHeap")
+    plt.bar([i + 0.5 * bar_width for i in x], d_heap_memory_avg, width=bar_width, label="DHeap (d=4)")
+    plt.bar([i + 1.5 * bar_width for i in x], fibonacci_memory_avg, width=bar_width, label="FibonacciHeap")
+    plt.xticks(x, graph_sizes)
     plt.xlabel("Graph Size (Number of Nodes)")
-    plt.ylabel("Memory Consumed (Bytes)")
-    plt.title("Memory Comparison")
+    plt.ylabel("Average Memory Consumed (Bytes)")
+    plt.title("Memory Comparison (Averaged)")
     plt.legend()
     plt.grid(True)
     
