@@ -11,16 +11,17 @@ DijkHeap Explorer is a Python-based tool designed to compare the performance of 
    ```
 
 2. **Create a Virtual Environment:**
-   - Using `conda`:
-     ```bash
-     conda create -n dijkheap_env
-     conda activate dijkheap_env
-     ```
-   - Using `venv`:
-     ```bash
-     python -m venv dijkheap_env
-     source dijkheap_env/bin/activate  # On Windows use `dijkheap_env\Scripts\activate`
-     ```
+   
+   Using `conda`:
+   ```bash
+   conda create -n dijkheap_env
+   conda activate dijkheap_env
+   ```
+   Using `venv`:
+   ```bash
+   python -m venv dijkheap_env
+   source dijkheap_env/bin/activate  # On Windows use `dijkheap_env\Scripts\activate`
+   ```
 
 3. **Install Dependencies:**
    ```bash
@@ -50,7 +51,20 @@ You will see the main menu of this program:
 Enter your choice: 
 ```
 
-1. **Run experiment on small graph (10 nodes):**
+1. **Generate new datasets (graphs):**
+   - **Command:** Select option `3` from the main menu.
+   - **Expected Output:**
+     ```
+     --- Generate New Datasets ---
+     Enter a list of graph sizes (e.g., 2000, 3000 or [2000, 3000]):
+     Graph sizes: 10, 1000, 2000, 3000
+     Generating graph with 10 nodes...
+     Generating graph with 1000 nodes...
+     Generating graph with 2000 nodes...
+     Generating graph with 3000 nodes...
+     Dataset generation completed.
+     ```
+2. **Run experiment on small graph (10 nodes):**
    - **Command:** Select option `1` from the main menu.
    - **Expected Output:**
      ```
@@ -58,7 +72,7 @@ Enter your choice:
      Experiment completed.
      ```
 
-2. **Run experiment on all available datasets:**
+3. **Run experiment on all available datasets:**
    - **Command:** Select option `2` from the main menu.
    - **Expected Output:**
      ```
@@ -67,18 +81,6 @@ Enter your choice:
      Experiment completed.
      Running experiment on data/graph_3000_nodes.json (Size: 3000)...
      Experiment completed.
-     ```
-
-3. **Generate new datasets (graphs):**
-   - **Command:** Select option `3` from the main menu.
-   - **Expected Output:**
-     ```
-     --- Generate New Datasets ---
-     Enter a list of graph sizes (e.g., 2000, 3000 or [2000, 3000]):
-     Graph sizes: 2000, 3000
-     Generating graph with 2000 nodes...
-     Generating graph with 3000 nodes...
-     Dataset generation completed.
      ```
 
 4. **Run custom experiment:**
