@@ -1,12 +1,16 @@
+import csv
 import json
 import time
-import csv
+import tracemalloc
+
+import matplotlib.pyplot as plt
+
 from radix_heap import RadixHeap
 from binary_heap import BinaryHeap
 from d_heap import DHeap
 from fibonacci_heap import FibonacciHeap
 from dijkstra import dijkstra_shortest_path, build_graph_from_edges
-import matplotlib.pyplot as plt
+
 
 def load_graph_into_radix_heap(filepath):
     """
@@ -135,11 +139,11 @@ def print_shortest_distances(shortest_distances, heap_type):
 
 def run_experiment(data_file, graph_size):
     """
-    Run Dijkstra's algorithm on the given graph and record the time consumed.
+    Run Dijkstra's algorithm on the given graph and record the time and memory consumed.
     
     :param data_file: Path to the graph file.
     :param graph_size: Size of the graph (number of nodes).
-    :return: A tuple containing the time consumed by RadixHeap, BinaryHeap, DHeap, and FibonacciHeap.
+    :return: A tuple containing the time and memory consumed by RadixHeap, BinaryHeap, DHeap, and FibonacciHeap.
     """
     # Load and build the graph
     graph, nodes = load_graph(data_file)
@@ -148,41 +152,64 @@ def run_experiment(data_file, graph_size):
     source_node = 0
     
     # Run Dijkstra's algorithm with RadixHeap
+    tracemalloc.start()
     radix_heap = load_graph_into_radix_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, radix_heap, "RadixHeap")
     radix_time = time.time() - start_time
+    radix_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
     
     # Run Dijkstra's algorithm with BinaryHeap
+    tracemalloc.start()
     binary_heap = load_graph_into_binary_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, binary_heap, "BinaryHeap")
     binary_time = time.time() - start_time
+    binary_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
     
     # Run Dijkstra's algorithm with DHeap
+    tracemalloc.start()
     d_heap = load_graph_into_d_heap(data_file, d=4)  # Use d=4 for a 4-ary heap
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, d_heap, "DHeap")
     d_heap_time = time.time() - start_time
+    d_heap_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
     
     # Run Dijkstra's algorithm with FibonacciHeap
+    tracemalloc.start()
     fibonacci_heap = load_graph_into_fibonacci_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, fibonacci_heap, "FibonacciHeap")
     fibonacci_time = time.time() - start_time
+    fibonacci_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    tracemalloc.stop()
     
-    return radix_time, binary_time, d_heap_time, fibonacci_time
+    return (
+        (radix_time, radix_memory),
+        (binary_time, binary_memory),
+        (d_heap_time, d_heap_memory),
+        (fibonacci_time, fibonacci_memory)
+    )
 
 def save_results_to_csv(results, filename):
     """
     Save the experiment results to a CSV file.
     
-    :param results: A list of tuples (graph_size, radix_time, binary_time, d_heap_time, fibonacci_time).
+    :param results: A list of tuples (graph_size, radix_time, radix_memory, binary_time, binary_memory, d_heap_time, d_heap_memory, fibonacci_time, fibonacci_memory).
     :param filename: The name of the CSV file.
     """
     with open(filename, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["Graph Size", "RadixHeap Time (s)", "BinaryHeap Time (s)", "DHeap Time (s)", "FibonacciHeap Time (s)"])
+        writer.writerow([
+            "Graph Size", 
+            "RadixHeap Time (s)", "RadixHeap Memory (B)", 
+            "BinaryHeap Time (s)", "BinaryHeap Memory (B)", 
+            "DHeap Time (s)", "DHeap Memory (B)", 
+            "FibonacciHeap Time (s)", "FibonacciHeap Memory (B)"
+        ])
         writer.writerows(results)
     
     print(f"Results saved to {filename}")
@@ -191,25 +218,46 @@ def plot_results(results):
     """
     Plot the experiment results.
     
-    :param results: A list of tuples (graph_size, radix_time, binary_time, d_heap_time, fibonacci_time).
+    :param results: A list of tuples (graph_size, radix_time, radix_memory, binary_time, binary_memory, d_heap_time, d_heap_memory, fibonacci_time, fibonacci_memory).
     """
     graph_sizes = [result[0] for result in results]
-    radix_times = [result[1] for result in results]
-    binary_times = [result[2] for result in results]
-    d_heap_times = [result[3] for result in results]
-    fibonacci_times = [result[4] for result in results]
     
-    plt.figure(figsize=(10, 6))
+    # Extract time and memory data
+    radix_times = [result[1][0] for result in results]
+    radix_memory = [result[1][1] for result in results]
+    binary_times = [result[2][0] for result in results]
+    binary_memory = [result[2][1] for result in results]
+    d_heap_times = [result[3][0] for result in results]
+    d_heap_memory = [result[3][1] for result in results]
+    fibonacci_times = [result[4][0] for result in results]
+    fibonacci_memory = [result[4][1] for result in results]
+    
+    # Plot time comparison
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
     plt.plot(graph_sizes, radix_times, marker='o', label="RadixHeap")
     plt.plot(graph_sizes, binary_times, marker='o', label="BinaryHeap")
     plt.plot(graph_sizes, d_heap_times, marker='o', label="DHeap (d=4)")
     plt.plot(graph_sizes, fibonacci_times, marker='o', label="FibonacciHeap")
-    
     plt.xlabel("Graph Size (Number of Nodes)")
     plt.ylabel("Time Consumed (Seconds)")
-    plt.title("Dijkstra's Algorithm Performance: RadixHeap vs BinaryHeap vs DHeap vs FibonacciHeap")
+    plt.title("Time Comparison")
     plt.legend()
     plt.grid(True)
+    
+    # Plot memory comparison
+    plt.subplot(1, 2, 2)
+    plt.plot(graph_sizes, radix_memory, marker='o', label="RadixHeap")
+    plt.plot(graph_sizes, binary_memory, marker='o', label="BinaryHeap")
+    plt.plot(graph_sizes, d_heap_memory, marker='o', label="DHeap (d=4)")
+    plt.plot(graph_sizes, fibonacci_memory, marker='o', label="FibonacciHeap")
+    plt.xlabel("Graph Size (Number of Nodes)")
+    plt.ylabel("Memory Consumed (Bytes)")
+    plt.title("Memory Comparison")
+    plt.legend()
+    plt.grid(True)
+    
+    plt.tight_layout()
     plt.show()
 
 # Example usage

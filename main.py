@@ -52,14 +52,14 @@ def main_menu():
         
         if choice == "1":
             print("\nRunning experiment on small graph...")
-            radix_time, binary_time, d_heap_time, fibonacci_time = run_experiment("data/graph_example.json", 10)
-            results.append((10, radix_time, binary_time, d_heap_time, fibonacci_time))
+            radix, binary, d_heap, fibonacci = run_experiment("data/graph_example.json", 10)
+            results.append((10, radix, binary, d_heap, fibonacci))
             print("Experiment completed.")
         
         elif choice == "2":
             print("\nRunning experiment on large graph...")
-            radix_time, binary_time, d_heap_time, fibonacci_time = run_experiment("data/large_graph.json", 100)
-            results.append((100, radix_time, binary_time, d_heap_time, fibonacci_time))
+            radix, binary, d_heap, fibonacci = run_experiment("data/large_graph.json", 100)
+            results.append((100, radix, binary, d_heap, fibonacci))
             print("Experiment completed.")
         
         elif choice == "3":
@@ -69,8 +69,8 @@ def main_menu():
             data_file = input("Enter the path to the graph file: ")
             graph_size = int(input("Enter the number of nodes in the graph: "))
             print(f"\nRunning experiment on custom graph ({graph_size} nodes)...")
-            radix_time, binary_time, d_heap_time, fibonacci_time = run_experiment(data_file, graph_size)
-            results.append((graph_size, radix_time, binary_time, d_heap_time, fibonacci_time))
+            radix, binary, d_heap, fibonacci = run_experiment(data_file, graph_size)
+            results.append((graph_size, radix, binary, d_heap, fibonacci))
             print("Experiment completed.")
         
         elif choice == "5":
@@ -79,7 +79,12 @@ def main_menu():
             else:
                 print("\nResults:")
                 for result in results:
-                    print(f"Graph Size: {result[0]}, RadixHeap: {result[1]:.6f}s, BinaryHeap: {result[2]:.6f}s, DHeap: {result[3]:.6f}s, FibonacciHeap: {result[4]:.6f}s")
+                    print(f"Graph Size: {result[0]}")
+                    print(f"RadixHeap: Time={result[1][0]:.6f}s, Memory={result[1][1]}B")
+                    print(f"BinaryHeap: Time={result[2][0]:.6f}s, Memory={result[2][1]}B")
+                    print(f"DHeap: Time={result[3][0]:.6f}s, Memory={result[3][1]}B")
+                    print(f"FibonacciHeap: Time={result[4][0]:.6f}s, Memory={result[4][1]}B")
+                    print()
         
         elif choice == "6":
             if not results:
