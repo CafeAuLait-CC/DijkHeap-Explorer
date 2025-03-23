@@ -1,4 +1,4 @@
-import os, json
+import json
 import random
 
 def generate_weighted_graph(num_nodes, num_edges, weight_range=(1, 10)):
@@ -32,14 +32,11 @@ def save_graph_to_disk(graph, filename):
     :param graph: The graph to save.
     :param filename: The name of the file to save the graph in.
     """
-    data_dir = "data"
-    os.makedirs(data_dir, exist_ok=True)
     
-    filepath = os.path.join(data_dir, filename)
-    with open(filepath, 'w') as f:
+    with open(filename, 'w') as f:
         json.dump(graph, f)
     
-    print(f"Graph saved to {filepath}")
+    print(f"Graph saved to {filename}")
 
 if __name__ == "__main__":
     # Generate a larger graph (10x more nodes and edges)
