@@ -6,8 +6,8 @@ DijkHeap Explorer is a Python-based tool designed to compare the performance of 
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/DijkHeapExplorer.git
-   cd DijkHeapExplorer
+   git clone https://github.com/CafeAuLait-CC/DijkHeap-Explorer.git
+   cd DijkHeap-Explorer
    ```
 
 2. **Create a Virtual Environment:**
