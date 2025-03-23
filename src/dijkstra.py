@@ -1,6 +1,3 @@
-from radix_heap import RadixHeap
-from binary_heap import BinaryHeap
-
 def dijkstra_shortest_path(graph, source, heap):
     """
     Dijkstra's shortest path algorithm using a generic heap.
@@ -50,6 +47,10 @@ def build_graph_from_edges(nodes, edges):
     return graph
 
 def main():
+    
+    from src.radix_heap import RadixHeap
+    from src.binary_heap import BinaryHeap
+
     # Example graph
     nodes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     edges = [

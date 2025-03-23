@@ -5,11 +5,11 @@ import tracemalloc
 
 import matplotlib.pyplot as plt
 
-from radix_heap import RadixHeap
-from binary_heap import BinaryHeap
-from d_heap import DHeap
-from fibonacci_heap import FibonacciHeap
-from dijkstra import dijkstra_shortest_path, build_graph_from_edges
+from src.radix_heap import RadixHeap
+from src.binary_heap import BinaryHeap
+from src.d_heap import DHeap
+from src.fibonacci_heap import FibonacciHeap
+from src.dijkstra import dijkstra_shortest_path, build_graph_from_edges
 
 
 def load_graph_into_radix_heap(filepath):

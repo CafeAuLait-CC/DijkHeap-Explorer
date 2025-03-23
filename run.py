@@ -1,7 +1,7 @@
 import os
 
-from helper import run_experiment, save_results_to_csv, plot_results, get_available_datasets
-from generate_data import generate_weighted_graph, save_graph_to_disk
+from src.helper import run_experiment, save_results_to_csv, plot_results, get_available_datasets
+from src.generate_data import generate_weighted_graph, save_graph_to_disk
 
 def generate_graphs():
     """
