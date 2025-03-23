@@ -2,6 +2,8 @@ import json
 import time
 from radix_heap import RadixHeap
 from binary_heap import BinaryHeap
+from d_heap import DHeap
+from fibonacci_heap import FibonacciHeap
 from dijkstra import dijkstra_shortest_path, build_graph_from_edges
 
 def load_graph_into_radix_heap(filepath):
@@ -33,6 +35,37 @@ def load_graph_into_binary_heap(filepath):
     for node in graph_data["nodes"]:
         binary_heap.push(float('inf'), node)  # Initialize all nodes with infinite distance
     return binary_heap
+
+def load_graph_into_d_heap(filepath, d=4):
+    """
+    Load a graph from a JSON file and insert its nodes into a DHeap.
+    
+    :param filepath: Path to the JSON file.
+    :param d: The number of children per node in the DHeap (default is 4).
+    :return: A DHeap containing the graph's nodes.
+    """
+    with open(filepath, 'r') as f:
+        graph_data = json.load(f)
+    
+    d_heap = DHeap(d=d)
+    for node in graph_data["nodes"]:
+        d_heap.push(10**18, node)  # Use a large integer instead of infinity
+    return d_heap
+
+def load_graph_into_fibonacci_heap(filepath):
+    """
+    Load a graph from a JSON file and insert its nodes into a FibonacciHeap.
+    
+    :param filepath: Path to the JSON file.
+    :return: A FibonacciHeap containing the graph's nodes.
+    """
+    with open(filepath, 'r') as f:
+        graph_data = json.load(f)
+    
+    fibonacci_heap = FibonacciHeap()
+    for node in graph_data["nodes"]:
+        fibonacci_heap.push(10**18, node)  # Use a large integer instead of infinity
+    return fibonacci_heap
 
 def load_graph(filepath):
     """
