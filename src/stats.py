@@ -20,7 +20,7 @@ def save_results_to_csv(results, filename):
             "FibonacciHeap Time (s)", "FibonacciHeap Memory (B)"
         ])
         flattened_results = [
-            (item[0], tuple(x for subtuple in item[1:] for x in subtuple))
+            (item[0], item[1][0], item[1][1], item[2][0], item[2][1], item[3][0], item[3][1], item[4][0], item[4][1])
             for item in results
         ]
         writer.writerows(flattened_results)
