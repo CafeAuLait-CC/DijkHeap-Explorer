@@ -36,7 +36,7 @@ def load_graph_into_binary_heap(filepath):
         binary_heap.push(float('inf'), node)  # Initialize all nodes with infinite distance
     return binary_heap
 
-def load_graph_into_d_heap(filepath, d=4):
+def load_graph_into_d_heap(filepath):
     """
     Load a graph from a JSON file and insert its nodes into a DHeap.
     
@@ -47,7 +47,7 @@ def load_graph_into_d_heap(filepath, d=4):
     with open(filepath, 'r') as f:
         graph_data = json.load(f)
     
-    d_heap = DHeap(d=d)
+    d_heap = DHeap(num_nodes=len(graph_data["nodes"]), num_edges = len(graph_data["edges"])) 
     for node in graph_data["nodes"]:
         d_heap.push(10**18, node)  # Use a large integer instead of infinity
     return d_heap

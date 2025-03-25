@@ -89,6 +89,55 @@ class FibonacciHeap:
         self.count -= 1
         return value, min_node.priority
 
+    def decrease_key(self, node, new_priority):
+        """Decrease the priority of a node."""
+        if node is None:
+            return False  # Gracefully handle None nodes
+        
+        if new_priority > node.priority:
+            return False  # Not actually decreasing
+        
+        node.priority = new_priority
+        parent = node.parent
+        
+        if parent is not None and node.priority < parent.priority:
+            self._cut(node, parent)
+            self._cascading_cut(parent)
+        
+        if node.priority < self.min_node.priority:
+            self.min_node = node
+        
+        return True
+
+    def _cut(self, node, parent):
+        # Remove node from parent's child list
+        if node.left == node:
+            parent.child = None
+        else:
+            node.left.right = node.right
+            node.right.left = node.left
+            if parent.child == node:
+                parent.child = node.left
+        
+        parent.degree -= 1
+        node.parent = None
+        node.marked = False
+        
+        # Add node to root list
+        node.left = self.min_node
+        node.right = self.min_node.right
+        self.min_node.right.left = node
+        self.min_node.right = node
+
+    def _cascading_cut(self, node):
+        parent = node.parent
+        if parent is not None:
+            if not node.marked:
+                node.marked = True
+            else:
+                self._cut(node, parent)
+                self._cascading_cut(parent)
+
     def _consolidate(self):
         """
         Consolidate the heap to ensure no two roots have the same degree.

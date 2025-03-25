@@ -99,7 +99,7 @@ def plot_results(results, filename):
         plt.subplot(1, 2, 1)
         plt.plot(sizes, avg_data["radix_time"], 'o-', label="Radix Heap")
         plt.plot(sizes, avg_data["binary_time"], 'o-', label="Binary Heap")
-        plt.plot(sizes, avg_data["d_heap_time"], 'o-', label="D-Heap (d=4)")
+        plt.plot(sizes, avg_data["d_heap_time"], 'o-', label="D-Heap")
         plt.plot(sizes, avg_data["fibonacci_time"], 'o-', label="Fibonacci Heap")
 
         plt.xlabel("Graph Size (Number of Nodes)")
@@ -140,44 +140,53 @@ def plot_results(results, filename):
 
 def _plot_combined_results(type_grouped, filename):
     """Helper to generate a combined plot showing all graph types."""
-    plt.figure(figsize=(14, 8))
-    
-    # Time comparison
-    plt.subplot(2, 1, 1)
-    for graph_type in type_grouped:
-        sizes = sorted(type_grouped[graph_type].keys())
-        avg_times = [
-            sum(type_grouped[graph_type][size]["radix_times"]) / 
-            len(type_grouped[graph_type][size]["radix_times"])
-            for size in sizes
-        ]
-        plt.plot(sizes, avg_times, 'o-', label=f"{graph_type} (Radix)")
-    
-    plt.title("Time Comparison Across All Graph Types (Radix Heap)")
-    plt.xlabel("Graph Size (Nodes)")
-    plt.ylabel("Time (seconds)")
-    plt.legend()
-    plt.grid(True)
+    heap_dicts = {
+        "Redix": ["radix_times", "radix_memory", "Radix Heap"],
+        "Binary": ["binary_times", "binary_memory", "Binary Heap"],
+        "DHeap": ["d_heap_times", "d_heap_memory", "D-Heap"],
+        "Fibonacci": ["fibonacci_times", "fibonacci_memory", "Fibonacci Heap"]
+    }
 
-    # Memory comparison
-    plt.subplot(2, 1, 2)
-    for graph_type in type_grouped:
-        sizes = sorted(type_grouped[graph_type].keys())
-        avg_memory = [
-            sum(type_grouped[graph_type][size]["radix_memory"]) / 
-            len(type_grouped[graph_type][size]["radix_memory"])
-            for size in sizes
-        ]
-        plt.plot(sizes, avg_memory, 'o-', label=f"{graph_type} (Radix)")
-    
-    plt.title("Memory Comparison Across All Graph Types (Radix Heap)")
-    plt.xlabel("Graph Size (Nodes)")
-    plt.ylabel("Memory (bytes)")
-    plt.legend()
-    plt.grid(True)
+    for key, value in heap_dicts.items():
 
-    plt.tight_layout()
-    combined_filename = f"{filename}_combined.jpg"
-    plt.savefig(combined_filename)
-    plt.close()
-    print(f"{Colors.BLUE}Combined plot saved to {combined_filename}{Colors.RESET}")
+        plt.figure(figsize=(14, 8))
+        
+        # Time comparison
+        plt.subplot(2, 1, 1)
+        for graph_type in type_grouped:
+            sizes = sorted(type_grouped[graph_type].keys())
+            avg_times = [
+                sum(type_grouped[graph_type][size][value[0]]) / 
+                len(type_grouped[graph_type][size][value[0]])
+                for size in sizes
+            ]
+            plt.plot(sizes, avg_times, 'o-', label=f"{graph_type} ({key})")
+        
+        plt.title(f"Time Comparison Across All Graph Types ({value[2]})")
+        plt.xlabel("Graph Size (Nodes)")
+        plt.ylabel("Time (seconds)")
+        plt.legend()
+        plt.grid(True)
+
+        # Memory comparison
+        plt.subplot(2, 1, 2)
+        for graph_type in type_grouped:
+            sizes = sorted(type_grouped[graph_type].keys())
+            avg_memory = [
+                sum(type_grouped[graph_type][size][value[1]]) / 
+                len(type_grouped[graph_type][size][value[1]])
+                for size in sizes
+            ]
+            plt.plot(sizes, avg_memory, 'o-', label=f"{graph_type} ({key})")
+        
+        plt.title(f"Memory Comparison Across All Graph Types ({value[2]})")
+        plt.xlabel("Graph Size (Nodes)")
+        plt.ylabel("Memory (bytes)")
+        plt.legend()
+        plt.grid(True)
+
+        plt.tight_layout()
+        combined_filename = f"{filename}_combined_{key.lower()}.jpg"
+        plt.savefig(combined_filename)
+        plt.close()
+        print(f"{Colors.BLUE}Combined plot saved to {combined_filename}{Colors.RESET}")

@@ -5,6 +5,7 @@ class BinaryHeap:
     def __init__(self):
         self.heap = []  # List to store the heap elements
         self.size = 0   # Number of elements in the heap
+        self.node_positions = {}  # Maps node values to heap indices
 
     def is_empty(self):
         """Check if the heap is empty."""
@@ -18,6 +19,7 @@ class BinaryHeap:
         :param value: The value to insert.
         """
         self.heap.append((priority, value))
+        self.node_positions[value] = self.size  # Track before size increment
         self.size += 1
         self._bubble_up(self.size - 1)
 
@@ -30,17 +32,33 @@ class BinaryHeap:
         if self.is_empty():
             raise IndexError("Pop from an empty BinaryHeap.")
         
-        # Swap the root with the last element
         self._swap(0, self.size - 1)
-        
-        # Remove the last element (smallest priority)
         priority, value = self.heap.pop()
+        
+        # Safely remove from node_positions if exists
+        if value in self.node_positions:
+            del self.node_positions[value]
+        
         self.size -= 1
-        
-        # Restore the heap property
-        self._bubble_down(0)
-        
+        if not self.is_empty():
+            self._bubble_down(0)
         return value, priority
+
+    def decrease_key(self, index, new_priority):
+        """Decrease the priority of node at given index."""
+        if index is None or index >= self.size:
+            return False  # Indicate failure instead of raising error
+        
+        old_priority, value = self.heap[index]
+        if new_priority > old_priority:
+            return False  # Not actually decreasing
+        
+        self.heap[index] = (new_priority, value)
+        self._bubble_up(index)
+        return True  # Success
+
+    def get_position(self, value):
+        return self.node_positions.get(value, None)
 
     def _bubble_up(self, index):
         """
@@ -80,7 +98,12 @@ class BinaryHeap:
         """
         Swap two elements in the heap.
         """
+        val_i = self.heap[i][1]
+        val_j = self.heap[j][1]
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        self.node_positions[val_i] = j
+        self.node_positions[val_j] = i
+
 
     def __len__(self):
         """Return the number of elements in the heap."""

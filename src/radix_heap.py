@@ -64,6 +64,12 @@ class RadixHeap:
         
         return value, priority  # Return both the value and its priority
 
+    # def decrease_key(self, node, new_priority):
+    #     # Radix Heap doesn't natively support decrease-key.
+    #     # Instead, we must reinsert the node (this is a limitation).
+    #     # For optimal performance, use only with small integer weights.
+    #     self.push(new_priority, node.value)
+
     def _get_bucket_index(self, priority):
         """
         Determine the bucket index for a given priority.

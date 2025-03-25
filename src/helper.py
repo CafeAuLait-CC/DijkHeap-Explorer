@@ -102,7 +102,7 @@ def run_experiment(data_file, graph_size):
     
     # Run Dijkstra's algorithm with DHeap
     tracemalloc.start()
-    d_heap = load_graph_into_d_heap(data_file, d=4)  # Use d=4 for a 4-ary heap
+    d_heap = load_graph_into_d_heap(data_file)  # Use d = max(2, num_edges // num_nodes)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, d_heap, "DHeap")
     d_heap_time = time.time() - start_time

@@ -10,9 +10,18 @@ def dijkstra_shortest_path(graph, source, heap):
     # Initialize distances
     distances = {node: float('inf') for node in graph}
     distances[source] = 0  # Distance from source to itself is 0
+
+    # Track node positions in the heap (for decrease-key)
+    node_positions = {node: None for node in graph}
     
     # Initialize the heap
-    heap.push(0, source)  # Push the source node with distance 0
+    # Use position tracking only if the heap supports it
+    if hasattr(heap, 'get_position'):
+        node_positions = {node: None for node in graph}
+        heap.push(0, source)
+        node_positions[source] = heap.get_position(source)
+    else:
+        heap.push(0, source)  # Lazy approach (no decrease-key)
     
     # Process nodes in the heap
     while not heap.is_empty():
@@ -28,7 +37,20 @@ def dijkstra_shortest_path(graph, source, heap):
             # If a shorter path is found, update the distance and push to the heap
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
-                heap.push(distance, neighbor)
+                
+                if hasattr(heap, 'decrease_key'):
+                    if neighbor in node_positions and node_positions[neighbor] is not None:
+                        if not heap.decrease_key(node_positions[neighbor], distance):
+                            # Fallback to push if decrease_key fails
+                            heap.push(distance, neighbor)
+                            node_positions[neighbor] = heap.get_position(neighbor)
+                    else:
+                        # First time seeing this node
+                        heap.push(distance, neighbor)
+                        if hasattr(heap, 'get_position'):
+                            node_positions[neighbor] = heap.get_position(neighbor)
+                else:
+                    heap.push(distance, neighbor)       # Lazy insertion (RadixHeap)
     
     return distances
 

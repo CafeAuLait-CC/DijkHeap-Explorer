@@ -2,14 +2,14 @@ class DHeap:
     """
     A d-ary heap (d-heap) implementation.
     """
-    def __init__(self, d=2):
+    def __init__(self, num_nodes, num_edges):
         """
         Initialize the d-heap.
         
         :param d: The number of children each node can have (default is 2, which is a binary heap).
         """
         self.heap = []  # List to store the heap elements
-        self.d = d      # Number of children per node
+        self.d = max(2, num_edges // num_nodes)
 
     def is_empty(self):
         """Check if the heap is empty."""
