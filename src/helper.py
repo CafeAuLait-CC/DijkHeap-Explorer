@@ -45,7 +45,7 @@ def run_dijkstra(graph, source_node, heap, heap_type):
 
 def get_available_datasets():
     """
-    Scan the /data folder for all JSON files and return their paths and sizes.
+    Scan the /data folder for all JSON files and return their paths, sizes and types.
     
     :return: A list of tuples (filepath, graph_size).
     """
@@ -61,7 +61,10 @@ def get_available_datasets():
             with open(filepath, 'r') as f:
                 graph_data = json.load(f)
             graph_size = len(graph_data["nodes"])
-            datasets.append((filepath, graph_size))
+            # Extract graph type from filename (format: graph_n{size}_e{edges}_{type}.json)
+            parts = filename.split('_')
+            graph_type = parts[3].split('.')[0] if len(parts) >= 4 else "unknown"
+            datasets.append((filepath, graph_size, graph_type))
     
     return datasets
 

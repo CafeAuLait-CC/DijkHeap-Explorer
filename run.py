@@ -23,17 +23,18 @@ def generate_graphs():
         user_input = user_input[1:-1]  # Remove brackets
 
     # Verify user input
-    graph_sizes = {}
+    graph_sizes = []
     invalid_input = []
     input_list = [size.strip() for size in user_input.split(",")]
 
     for item in input_list:
         if is_valid_input(item):
             if item.isdecimal():
-                graph_sizes[int(item)] = "random"
+                graph_sizes.append((int(item), "random"))
             else:
-                graph_types = item[-1]
-                graph_sizes[int(item[:-1])] = "dense" if graph_type == 'd' else "sparse" if graph_type == 's' else "middle"
+                graph_type_flag = item[-1]
+                graph_type = "dense" if graph_type_flag == 'd' else "sparse" if graph_type_flag == 's' else "middle"
+                graph_sizes.append((int(item[:-1]), graph_type))
         else:
             invalid_input.append(item)
     if len(invalid_input) > 0:
@@ -44,11 +45,13 @@ def generate_graphs():
     os.makedirs(data_dir, exist_ok=True)
         
     # Generate graphs
-    for size, type in graph_sizes.items():
+    for item in graph_sizes:
+        size = item[0]
+        type = item[1]
         print(f"\nGenerating graph with {size} nodes...")
         sparse_edge = size * 2
-        dense_edge = size * (size - 1) / 2
-        num_edges = sparse_edge if type == "sparse" else dense_edge if type == "dense" else (sparse_edge + dense_edge) / 2 if type == "middle" else size * 5
+        dense_edge = size * (size - 1) // 2
+        num_edges = sparse_edge if type == "sparse" else dense_edge if type == "dense" else (sparse_edge + dense_edge) // 2 if type == "middle" else size * 5
         graph = generate_weighted_graph(num_nodes=size, num_edges=num_edges)  # Adjust num_edges as needed
         filename = f"graph_n{size}_e{num_edges}_{type}.json"
         filepath = os.path.join(data_dir, filename)
@@ -65,65 +68,67 @@ def main_menu():
     
     while True:
         print(f"\n{Colors.CYAN}--- Dijkstra's Algorithm Performance Comparison ---{Colors.RESET}n")
-        print(f"{Colors.YELLOW}1. List all datasets (graphs){Colors.RESET}")
-        print(f"{Colors.YELLOW}2. Generate new datasets (graphs){Colors.RESET}")
-        print(f"{Colors.YELLOW}3. Run experiment on all available datasets{Colors.RESET}")
-        print(f"{Colors.YELLOW}4. View previous results{Colors.RESET}")
-        print(f"0. Exit")
+        print(f"{Colors.YELLOW}1. [L]ist all datasets (graphs){Colors.RESET}")
+        print(f"{Colors.YELLOW}2. [G]enerate new datasets (graphs){Colors.RESET}")
+        print(f"{Colors.YELLOW}3. [R]un benchmark on all available datasets{Colors.RESET}")
+        print(f"{Colors.YELLOW}4. [V]iew previous results{Colors.RESET}")
+        print(f"0. [E]xit")
         
         choice = input("\nEnter your choice: ")
 
         match choice:
 
-            case "1":
+            case "1" | "L" | "l":
                 datasets = get_available_datasets()
                 for data in datasets:
                     print(f"Graph file: {data[0]}, Size: {data[1]}")
         
-            case "2":
+            case "2" | "G" | "g":
                 generate_graphs()
         
-            case "3":
+            case "3" | "R" | "r":
                 print("\n - Running Dijkstra's algorithm on all available datasets...")
                 datasets = get_available_datasets()
                 if not datasets:
                     print("No datasets found in the /data folder. Please generate datasets first.")
                 else:
-                    for filepath, graph_size in datasets:
-                        print(f"\n{Colors.MAGENTA}Running experiment on {filepath} (Size: {graph_size})...{Colors.RESET}")
+                    for filepath, graph_size, graph_type in datasets:
+                        print(f"\n{Colors.MAGENTA}Running benchmark on {filepath} (Size: {graph_size}, Type: {graph_type})...{Colors.RESET}")
                         radix, binary, d_heap, fibonacci = run_experiment(filepath, graph_size)
-                        results.append((graph_size, radix, binary, d_heap, fibonacci))
+                        results.append((graph_size, graph_type, radix, binary, d_heap, fibonacci))
                         print(f"{Colors.GREEN}Done.{Colors.RESET}")
 
                 current_timestamp = datetime.now().strftime("%y%m%d%H%M%S")
-                filename = "results-" + current_timestamp
+                filename_plot = "plot-" + current_timestamp
+                filename_csv = "results-" + current_timestamp
 
                 # Plot results
                 if not results:
-                    print("\nNo results to plot. Please run an experiment first.")
+                    print("\nNo results to plot. Please run an benchmark first.")
                 else:
-                    plot_results(results, filename)
+                    plot_results(results, filename_plot)
 
                 # Save results into csv
                 if not results:
-                    print("\nNo results to save. Please run an experiment first.")
+                    print("\nNo results to save. Please run an benchmark first.")
                 else:
-                    save_results_to_csv(results, filename)
+                    save_results_to_csv(results, filename_csv)
         
-            case "4":
+            case "4" | "V" | "v":
                 if not results:
-                    print("\nNo results to display. Please run an experiment first.")
+                    print("\nNo results to display. Please run an benchmark first.")
                 else:
                     print("\nResults:")
                     for result in results:
-                        print(f"Graph Size: {result[0]}")
-                        print(f"RadixHeap: Time={result[1][0]:.6f}s, Memory={result[1][1]}B")
-                        print(f"BinaryHeap: Time={result[2][0]:.6f}s, Memory={result[2][1]}B")
-                        print(f"DHeap: Time={result[3][0]:.6f}s, Memory={result[3][1]}B")
-                        print(f"FibonacciHeap: Time={result[4][0]:.6f}s, Memory={result[4][1]}B")
+                        print(f"{Colors.MAGENTA}Graph Size: {result[0]}{Colors.RESET}")
+                        print(f"Graph Type: {result[1]}")
+                        print(f"RadixHeap: Time={result[2][0]:.6f}s, Memory={result[2][1]}B")
+                        print(f"BinaryHeap: Time={result[3][0]:.6f}s, Memory={result[3][1]}B")
+                        print(f"DHeap: Time={result[4][0]:.6f}s, Memory={result[4][1]}B")
+                        print(f"FibonacciHeap: Time={result[5][0]:.6f}s, Memory={result[5][1]}B")
                         print()            
         
-            case "0":
+            case "0" | "E" | "e":
                 print("\nExiting the program. Goodbye!")
                 exit(0)
         
