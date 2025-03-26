@@ -43,7 +43,11 @@ class RadixHeap:
             bucket_idx = 64
         else:
             priority = max(priority, self.last_popped)
-            diff = priority - self.last_popped
+            # Calculate diff relative to the last popped priority
+            if self.last_popped is None:
+                diff = priority
+            else:
+                diff = priority - self.last_popped
             bucket_idx = min(63, self._get_bucket_idx(diff))
         
         # Add to bucket
@@ -168,10 +172,12 @@ class RadixHeap:
         """
         if diff <= 0:
             return 0
-        if isinstance(diff, int):
-            return min(63, diff.bit_length())
+        # Handle negative diff by using absolute value
+        abs_diff = abs(diff)
+        if isinstance(abs_diff, int):
+            return min(63, abs_diff.bit_length())
         try:
-            return min(63, math.floor(math.log2(diff)) + 1)
+            return min(63, math.floor(math.log2(abs_diff)) + 1)
         except (ValueError, OverflowError):
             return 64
 

@@ -62,6 +62,7 @@ class FibonacciHeap:
             self.min_node = new_node
         
         self.count += 1
+        return new_node
 
     def pop(self):
         """
