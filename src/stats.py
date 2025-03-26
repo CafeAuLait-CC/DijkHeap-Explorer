@@ -4,11 +4,16 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 
 def save_results_to_csv(results, filename):
-    """
-    Save the experiment results to a CSV file.
+    """Save experiment results to a CSV file.
     
-    :param results: A list of tuples (graph_size, radix_time, radix_memory, binary_time, binary_memory, d_heap_time, d_heap_memory, fibonacci_time, fibonacci_memory).
-    :param filename: The name of the CSV file.
+    Args:
+        results: List of tuples containing:
+                (graph_size, graph_type, 
+                 (radix_time, radix_memory), 
+                 (binary_time, binary_memory),
+                 (d_heap_time, d_heap_memory),
+                 (fibonacci_time, fibonacci_memory))
+        filename: Base name for the output file (without extension).
     """
     result_dir = "results"
     filename = filename + ".csv"
@@ -35,12 +40,12 @@ def save_results_to_csv(results, filename):
 
 
 def plot_results(results, filename):
-    """
-    Plot the experiment results by averaging datapoints with the same dataset and heap type.
+    """Plot experiment results with time and memory comparisons.
     
-    :param results: A list of tuples (graph_size, radix_time, radix_memory, binary_time, binary_memory, d_heap_time, d_heap_memory, fibonacci_time, fibonacci_memory).
+    Args:
+        results: List of experiment results (same format as save_results_to_csv).
+        filename: Base name for output plot files.
     """
-
     result_dir = "results"
     filename = os.path.join(result_dir, filename)
     os.makedirs(result_dir, exist_ok=True)
@@ -126,9 +131,8 @@ def plot_results(results, filename):
         plt.grid(True)
         
         plt.tight_layout()
-        # plt.show()
 
-       # Save plot for this graph type
+        # Save plot for this graph type
         type_filename = f"{filename}_{graph_type}.jpg"
         plt.savefig(type_filename)
         plt.close()  # Close figure to free memory
@@ -139,7 +143,12 @@ def plot_results(results, filename):
         _plot_combined_results(type_grouped, filename)
 
 def _plot_combined_results(type_grouped, filename):
-    """Helper to generate a combined plot showing all graph types."""
+    """Helper function to generate combined plots showing all graph types.
+    
+    Args:
+        type_grouped: Dictionary of grouped results by graph type.
+        filename: Base name for output plot files.
+    """
     heap_dicts = {
         "Redix": ["radix_times", "radix_memory", "Radix Heap"],
         "Binary": ["binary_times", "binary_memory", "Binary Heap"],
@@ -148,7 +157,6 @@ def _plot_combined_results(type_grouped, filename):
     }
 
     for key, value in heap_dicts.items():
-
         plt.figure(figsize=(14, 8))
         
         # Time comparison

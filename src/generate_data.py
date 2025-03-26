@@ -2,17 +2,20 @@ import json
 import random
 
 def generate_weighted_graph(num_nodes, num_edges, weight_range=(1, 10)):
-    """
-    Generate a weighted graph with a specified number of nodes and edges.
+    """Generate a weighted undirected graph with specified parameters.
     
-    :param num_nodes: Number of nodes in the graph.
-    :param num_edges: Number of edges in the graph.
-    :param weight_range: Tuple (min_weight, max_weight) for edge weights.
-    :return: A dictionary representing the graph.
+    Args:
+        num_nodes: Number of nodes in the graph.
+        num_edges: Number of edges in the graph.
+        weight_range: Tuple (min_weight, max_weight) for edge weights.
+        
+    Returns:
+        A dictionary representing the graph with "nodes" and "edges" keys.
     """
     nodes = list(range(num_nodes))
     edges = set()
     
+    # Generate unique edges until we reach the desired count
     while len(edges) < num_edges:
         u = random.choice(nodes)
         v = random.choice(nodes)
@@ -26,13 +29,12 @@ def generate_weighted_graph(num_nodes, num_edges, weight_range=(1, 10)):
     }
 
 def save_graph_to_disk(graph, filename):
-    """
-    Save a graph to a JSON file in the /data folder.
+    """Save a graph to a JSON file.
     
-    :param graph: The graph to save.
-    :param filename: The name of the file to save the graph in.
+    Args:
+        graph: The graph dictionary to save.
+        filename: The name/path of the file to save to.
     """
-    
     with open(filename, 'w') as f:
         json.dump(graph, f)
     

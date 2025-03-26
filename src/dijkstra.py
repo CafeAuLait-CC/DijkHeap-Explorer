@@ -1,5 +1,13 @@
 def build_graph_from_edges(nodes, edges):
-    """Build adjacency list from edges."""
+    """Build adjacency list representation from edges.
+    
+    Args:
+        nodes: List of nodes in the graph.
+        edges: List of edges (u, v, weight) for weighted or (u, v) for unweighted.
+        
+    Returns:
+        Adjacency list representation of the graph.
+    """
     graph = {node: [] for node in nodes}  # Initialize with empty lists
     for edge in edges:
         if len(edge) == 3:  # Undirected graph (u, v, weight)
@@ -12,14 +20,16 @@ def build_graph_from_edges(nodes, edges):
     return graph
 
 def dijkstra_shortest_path(graph, source, heap):
-    """
-    Dijkstra's shortest path algorithm using a generic heap.
+    """Dijkstra's shortest path algorithm using a generic heap.
     
-    :param graph: A dictionary where keys are nodes and values are lists of 
-                 (neighbor, weight) tuples.
-    :param source: The source node.
-    :param heap: A heap object that supports push(), pop(), and is_empty().
-    :return: A dictionary containing the shortest distance from source to each node.
+    Args:
+        graph: Adjacency list where keys are nodes and values are lists of 
+              (neighbor, weight) tuples.
+        source: The source node.
+        heap: A heap object supporting push(), pop(), and is_empty().
+        
+    Returns:
+        Dictionary containing shortest distance from source to each node.
     """
     INF = float('inf')
     distances = {node: INF for node in graph}
@@ -38,7 +48,7 @@ def dijkstra_shortest_path(graph, source, heap):
         if current_distance > distances[current_node]:
             continue
         
-        # Ensure graph[current_node] is iterable and contains (neighbor, weight) pairs
+        # Explore neighbors
         for neighbor, weight in graph.get(current_node, []):
             distance = current_distance + weight
             if distance < distances[neighbor]:
@@ -51,7 +61,7 @@ def dijkstra_shortest_path(graph, source, heap):
     return distances
 
 def main():
-    
+    """Example usage of Dijkstra's algorithm with different heaps."""
     from src.radix_heap import RadixHeap
     from src.binary_heap import BinaryHeap
 

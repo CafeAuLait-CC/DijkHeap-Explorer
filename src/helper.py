@@ -1,15 +1,13 @@
 import json
 import os, re, time
 import tracemalloc
-
-
-
-
 from src.dijkstra import dijkstra_shortest_path
 from src.load_graph import load_graph_into_radix_heap, load_graph_into_binary_heap, load_graph_into_d_heap, load_graph_into_fibonacci_heap, load_graph
 
-# ANSI color codes
 class Colors:
+    """
+    ANSI color codes for terminal output formatting.
+    """
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
@@ -21,22 +19,26 @@ class Colors:
 
 def run_dijkstra(graph, source_node, heap, heap_type):
     """
-    Run Dijkstra's algorithm using the given heap and measure the time consumed.
+    Execute Dijkstra's algorithm using a specified heap implementation.
     
-    :param graph: The graph representation.
-    :param source_node: The source node for Dijkstra's algorithm.
-    :param heap: The heap object (RadixHeap or BinaryHeap).
-    :param heap_type: A string describing the heap type (for logging).
-    :return: A dictionary containing the shortest distances from the source node.
+    Args:
+        graph: The graph represented as an adjacency list.
+        source_node: Starting node for the algorithm.
+        heap: Heap implementation (Radix, Binary, etc.).
+        heap_type: String identifier for the heap type (for logging).
+        
+    Returns:
+        Dictionary of shortest distances from source_node.
     """
     print(f"\nRunning Dijkstra's algorithm with {heap_type} from source node {source_node}...")
     
-    # Initialize the source node distance to 0
+    # Initialize source node distance to 0
     heap.push(0, source_node)
     
-    start_time = time.time()  # Start timing
+    # Time the algorithm execution
+    start_time = time.time()
     shortest_distances = dijkstra_shortest_path(graph, source_node, heap)
-    end_time = time.time()  # End timing
+    end_time = time.time()
     
     time_consumed = end_time - start_time
     print(f"\n{Colors.GREEN}Time consumed by Dijkstra's algorithm ({heap_type}): {Colors.RESET}{time_consumed:.6f} seconds")
@@ -45,8 +47,10 @@ def run_dijkstra(graph, source_node, heap, heap_type):
 
 def get_available_datasets():
     """
-    Get dataset information without loading entire JSON files.
-    Tries to extract info from filenames first, falls back to partial parsing.
+    Scan the data directory for available graph datasets.
+    
+    Returns:
+        List of tuples containing (filepath, node_count, graph_type).
     """
     datasets = []
     data_dir = "data"
@@ -65,10 +69,8 @@ def get_available_datasets():
         try:
             parts = filename.split('_')
             if len(parts) >= 4:  # Expected format: graph_n{size}_e{edges}_{type}.json
-                # Extract size from part like "n5000"
                 size_str = parts[1][1:]  # Skip 'n' prefix
                 file_info['size'] = int(size_str)
-                # Extract type from part like "dense.json"
                 file_info['type'] = parts[3].split('.')[0]
                 datasets.append((file_info['path'], file_info['size'], file_info['type']))
                 continue
@@ -111,19 +113,20 @@ def get_available_datasets():
 
 def run_experiment(data_file, graph_size):
     """
-    Run Dijkstra's algorithm on the given graph and record the time and memory consumed.
+    Run benchmark comparing different heap implementations on a graph.
     
-    :param data_file: Path to the graph file.
-    :param graph_size: Size of the graph (number of nodes).
-    :return: A tuple containing the time and memory consumed by RadixHeap, BinaryHeap, DHeap, and FibonacciHeap.
+    Args:
+        data_file: Path to graph data file.
+        graph_size: Number of nodes in the graph.
+        
+    Returns:
+        Tuple of (time, memory) measurements for each heap type.
     """
     # Load and build the graph
     graph, nodes = load_graph(data_file)
+    source_node = 0  # Use first node as source
     
-    # Define the source node
-    source_node = 0
-    
-    # Run Dijkstra's algorithm with RadixHeap
+    # Benchmark RadixHeap
     tracemalloc.start()
     radix_heap = load_graph_into_radix_heap(data_file)
     start_time = time.time()
@@ -132,31 +135,31 @@ def run_experiment(data_file, graph_size):
     radix_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
     tracemalloc.stop()
     
-    # Run Dijkstra's algorithm with BinaryHeap
+    # Benchmark BinaryHeap
     tracemalloc.start()
     binary_heap = load_graph_into_binary_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, binary_heap, "BinaryHeap")
     binary_time = time.time() - start_time
-    binary_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    binary_memory = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
     
-    # Run Dijkstra's algorithm with DHeap
+    # Benchmark DHeap
     tracemalloc.start()
-    d_heap = load_graph_into_d_heap(data_file)  # Use d = max(2, num_edges // num_nodes)
+    d_heap = load_graph_into_d_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, d_heap, "DHeap")
     d_heap_time = time.time() - start_time
-    d_heap_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    d_heap_memory = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
     
-    # Run Dijkstra's algorithm with FibonacciHeap
+    # Benchmark FibonacciHeap
     tracemalloc.start()
     fibonacci_heap = load_graph_into_fibonacci_heap(data_file)
     start_time = time.time()
     _ = run_dijkstra(graph, source_node, fibonacci_heap, "FibonacciHeap")
     fibonacci_time = time.time() - start_time
-    fibonacci_memory = tracemalloc.get_traced_memory()[1]  # Peak memory usage
+    fibonacci_memory = tracemalloc.get_traced_memory()[1]
     tracemalloc.stop()
     
     return (
@@ -167,12 +170,14 @@ def run_experiment(data_file, graph_size):
     )
 
 def is_valid_input(s):
-    # Pattern explanation:
-    # ^        - start of string
-    # [1-9]    - first digit must be 1-9 (no leading zero)
-    # \d*      - zero or more additional digits
-    # [dms]?   - optional 'd', 'm', or 's' at the end
-    # $        - end of string
+    """
+    Validate user input for graph generation parameters.
+    
+    Args:
+        s: Input string to validate.
+        
+    Returns:
+        True if input matches expected pattern, False otherwise.
+    """
     pattern = r'^[1-9]\d*[dms]?$'
     return bool(re.fullmatch(pattern, s))
-

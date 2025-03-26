@@ -7,7 +7,16 @@ from src.dijkstra import build_graph_from_edges
 import json
 
 def load_graph(filepath):
-    """Load the graph from a JSON file."""
+    """Load the graph from a JSON file.
+    
+    Args:
+        filepath: Path to the JSON file containing graph data.
+        
+    Returns:
+        A tuple of (graph, nodes) where:
+        - graph is the adjacency list representation
+        - nodes is the list of nodes
+    """
     with open(filepath, 'r') as f:
         graph_data = json.load(f)
     
@@ -20,7 +29,14 @@ def load_graph(filepath):
     return graph, nodes
 
 def load_graph_into_radix_heap(filepath):
-    """Load graph into optimized RadixHeap."""
+    """Load graph nodes into a RadixHeap with initial infinity priority.
+    
+    Args:
+        filepath: Path to the JSON file containing graph data.
+        
+    Returns:
+        A RadixHeap containing all nodes with initial priority infinity.
+    """
     with open(filepath, 'r') as f:
         graph_data = json.load(f)
     
@@ -28,8 +44,16 @@ def load_graph_into_radix_heap(filepath):
     for node in graph_data["nodes"]:
         heap.push(float('inf'), node)  # Now safely handles infinity
     return heap
+
 def load_graph_into_binary_heap(filepath):
-    """Load graph into BinaryHeap."""
+    """Load graph nodes into a BinaryHeap with initial infinity priority.
+    
+    Args:
+        filepath: Path to the JSON file containing graph data.
+        
+    Returns:
+        A BinaryHeap containing all nodes with initial priority infinity.
+    """
     _, nodes = load_graph(filepath)
     heap = BinaryHeap()
     for node in nodes:
@@ -37,7 +61,15 @@ def load_graph_into_binary_heap(filepath):
     return heap
 
 def load_graph_into_d_heap(filepath, d=2):
-    """Load graph into DHeap."""
+    """Load graph nodes into a DHeap with initial infinity priority.
+    
+    Args:
+        filepath: Path to the JSON file containing graph data.
+        d: The branching factor for the DHeap.
+        
+    Returns:
+        A DHeap containing all nodes with initial priority infinity.
+    """
     _, nodes = load_graph(filepath)
     heap = DHeap(d=d)
     for node in nodes:
@@ -45,11 +77,13 @@ def load_graph_into_d_heap(filepath, d=2):
     return heap
 
 def load_graph_into_fibonacci_heap(filepath):
-    """
-    Load a graph from a JSON file and insert its nodes into a FibonacciHeap.
+    """Load graph nodes into a FibonacciHeap with initial infinity priority.
     
-    :param filepath: Path to the JSON file.
-    :return: A FibonacciHeap containing the graph's nodes.
+    Args:
+        filepath: Path to the JSON file containing graph data.
+        
+    Returns:
+        A FibonacciHeap containing all nodes with initial priority infinity.
     """
     _, nodes = load_graph(filepath)
     heap = FibonacciHeap()
