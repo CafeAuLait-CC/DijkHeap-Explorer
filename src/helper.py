@@ -45,27 +45,68 @@ def run_dijkstra(graph, source_node, heap, heap_type):
 
 def get_available_datasets():
     """
-    Scan the /data folder for all JSON files and return their paths, sizes and types.
-    
-    :return: A list of tuples (filepath, graph_size).
+    Get dataset information without loading entire JSON files.
+    Tries to extract info from filenames first, falls back to partial parsing.
     """
     datasets = []
     data_dir = "data"
     if not os.path.exists(data_dir):
         print(f"Directory '{data_dir}' does not exist. Please generate datasets first.")
         return datasets
-    
-    for filename in os.listdir(data_dir):
-        if filename.endswith(".json"):
-            filepath = os.path.join(data_dir, filename)
-            with open(filepath, 'r') as f:
-                graph_data = json.load(f)
-            graph_size = len(graph_data["nodes"])
-            # Extract graph type from filename (format: graph_n{size}_e{edges}_{type}.json)
+
+    for filename in sorted(os.listdir(data_dir)):
+        if not filename.endswith(".json"):
+            continue
+
+        filepath = os.path.join(data_dir, filename)
+        file_info = {'path': filepath, 'size': None, 'type': 'unknown'}
+
+        # First try to get info from filename pattern (fastest)
+        try:
             parts = filename.split('_')
-            graph_type = parts[3].split('.')[0] if len(parts) >= 4 else "unknown"
-            datasets.append((filepath, graph_size, graph_type))
-    
+            if len(parts) >= 4:  # Expected format: graph_n{size}_e{edges}_{type}.json
+                # Extract size from part like "n5000"
+                size_str = parts[1][1:]  # Skip 'n' prefix
+                file_info['size'] = int(size_str)
+                # Extract type from part like "dense.json"
+                file_info['type'] = parts[3].split('.')[0]
+                datasets.append((file_info['path'], file_info['size'], file_info['type']))
+                continue
+        except (IndexError, ValueError):
+            pass  # Fall through to JSON parsing
+
+        # If filename parsing failed, try partial JSON reading
+        try:
+            with open(filepath, 'r') as f:
+                nodes_found = False
+                node_count = 0
+                
+                for line in f:
+                    if '"nodes":' in line:
+                        nodes_found = True
+                        # Find the opening bracket
+                        while '[' not in line and not line.strip().endswith('['):
+                            line = next(f)
+                        # Count nodes until closing bracket
+                        for line in f:
+                            if ']' in line:
+                                break
+                            node_count += 1
+                        break
+                
+                if nodes_found:
+                    file_info['size'] = node_count
+                    # Try again to get type from filename
+                    parts = filename.split('_')
+                    if len(parts) >= 4:
+                        file_info['type'] = parts[3].split('.')[0]
+                    datasets.append((file_info['path'], file_info['size'], file_info['type']))
+                else:
+                    print(f"Warning: Couldn't find nodes in {filename}")
+        except Exception as e:
+            print(f"Error processing {filename}: {str(e)}")
+            continue
+
     return datasets
 
 def run_experiment(data_file, graph_size):

@@ -1,91 +1,84 @@
 class DHeap:
-    """
-    A d-ary heap (d-heap) implementation.
-    """
-    def __init__(self, num_nodes, num_edges):
-        """
-        Initialize the d-heap.
-        
-        :param d: The number of children each node can have (default is 2, which is a binary heap).
-        """
-        self.heap = []  # List to store the heap elements
-        self.d = max(2, num_edges // num_nodes)
+    """A d-ary heap implementation with decrease_key support."""
+    
+    def __init__(self, d=2):
+        self.heap = []
+        self.d = d  # Branching factor
+        self.position_map = {}
+        self.size = 0
 
     def is_empty(self):
-        """Check if the heap is empty."""
-        return len(self.heap) == 0
+        return self.size == 0
 
     def push(self, priority, value):
-        """
-        Insert a value with a given priority into the heap.
-        
-        :param priority: The priority of the value.
-        :param value: The value to insert.
-        """
+        if value in self.position_map:
+            return self.decrease_key(value, priority)
+            
         self.heap.append((priority, value))
-        self._bubble_up(len(self.heap) - 1)
+        self.position_map[value] = self.size
+        self.size += 1
+        self._bubble_up(self.size - 1)
 
     def pop(self):
-        """
-        Remove and return the value with the smallest priority.
-        
-        :return: The value with the smallest priority.
-        """
         if self.is_empty():
-            raise IndexError("Pop from an empty DHeap.")
-        
-        # Swap the root with the last element
-        self._swap(0, len(self.heap) - 1)
-        
-        # Remove the last element (smallest priority)
+            raise IndexError("Pop from empty heap")
+            
+        self._swap(0, self.size - 1)
         priority, value = self.heap.pop()
+        del self.position_map[value]
+        self.size -= 1
         
-        # Restore the heap property
-        self._bubble_down(0)
-        
+        if not self.is_empty():
+            self._bubble_down(0)
+            
         return value, priority
 
+    def decrease_key(self, value, new_priority):
+        if value not in self.position_map:
+            return False
+            
+        index = self.position_map[value]
+        current_priority = self.heap[index][0]
+        
+        if new_priority >= current_priority:
+            return False
+            
+        self.heap[index] = (new_priority, value)
+        self._bubble_up(index)
+        return True
+
+    def contains(self, value):
+        return value in self.position_map
+
     def _bubble_up(self, index):
-        """
-        Move the element at the given index up to restore the heap property.
-        """
         while index > 0:
-            parent_index = (index - 1) // self.d
-            if self.heap[index][0] < self.heap[parent_index][0]:
-                self._swap(index, parent_index)
-                index = parent_index
+            parent = (index - 1) // self.d
+            if self.heap[index][0] < self.heap[parent][0]:
+                self._swap(index, parent)
+                index = parent
             else:
                 break
 
     def _bubble_down(self, index):
-        """
-        Move the element at the given index down to restore the heap property.
-        """
-        while index < len(self.heap):
-            smallest_index = index
-            # Find the smallest child
-            for i in range(1, self.d + 1):
-                child_index = self.d * index + i
-                if child_index < len(self.heap) and self.heap[child_index][0] < self.heap[smallest_index][0]:
-                    smallest_index = child_index
+        while True:
+            smallest = index
+            first_child = self.d * index + 1
             
-            # If the smallest child is smaller than the current node, swap and continue
-            if smallest_index != index:
-                self._swap(index, smallest_index)
-                index = smallest_index
+            for i in range(self.d):
+                child = first_child + i
+                if child < self.size and self.heap[child][0] < self.heap[smallest][0]:
+                    smallest = child
+                    
+            if smallest != index:
+                self._swap(index, smallest)
+                index = smallest
             else:
                 break
 
     def _swap(self, i, j):
-        """
-        Swap two elements in the heap.
-        """
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        self.position_map[self.heap[i][1]] = i
+        self.position_map[self.heap[j][1]] = j
 
     def __len__(self):
-        """Return the number of elements in the heap."""
-        return len(self.heap)
-
-    def __str__(self):
-        """Return a string representation of the heap."""
-        return str(self.heap)
+        return self.size
